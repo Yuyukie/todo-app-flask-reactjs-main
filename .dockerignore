@@ -1,0 +1,27 @@
+# Ignorer les fichiers de système
+.DS_Store
+Thumbs.db
+
+# Ignorer les fichiers de cache
+node_modules/
+__pycache__/
+*.pyc
+
+# Ignorer les fichiers spécifiques à l'environnement
+.env
+*.log
+
+# Ignorer les fichiers temporaires
+*.swp
+*.bak
+*.tmp
+
+# Ignorer le dossier de builds React si présent
+frontend/dist/
+
+# Ignorer les fichiers de configuration de Docker
+docker-compose.override.yml
+
+# Ignorer le dossier de dépendances pour backend
+backend/.venv/
+backend/.tox/
