@@ -11,6 +11,7 @@ flask-migrate = "*"
 flask-smorest = "*"
 flask-cors = "*"
 colorama = "*"
+mysqlclient = "*"
 
 [dev-packages]
 black = "*"

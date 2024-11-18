@@ -1,23 +1,20 @@
-# Utiliser une image officielle Python
 FROM python:3.13-slim
 
-# Définir le répertoire de travail
 WORKDIR /app
 
-# Copier le Pipfile et Pipfile.lock (si existants)
-COPY Pipfile Pipfile.lock* ./ 
+RUN apt-get update && apt-get install -y \
+    default-libmysqlclient-dev \
+    pkg-config \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
 
-# Installer pipenv pour gérer les dépendances
-RUN pip install pipenv
+COPY Pipfile .
 
-# Installer les dépendances à partir du Pipfile
-RUN pipenv install --deploy --ignore-pipfile
+RUN pip install pipenv && \
+    pipenv install --skip-lock
 
-# Copier tout le code source dans le conteneur
 COPY . .
 
-# Exposer le port utilisé par Flask
 EXPOSE 5000
 
-# Définir la commande pour démarrer l'application Flask
 CMD ["pipenv", "run", "flask", "run", "--host=0.0.0.0"]

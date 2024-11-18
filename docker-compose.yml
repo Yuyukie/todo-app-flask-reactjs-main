@@ -1,28 +1,55 @@
 version: '3.8'
 
+networks:
+  todo-app-flask-reactjs_Bridge:
+    driver: bridge
+
 services:
+  nginx:
+    build:
+      context: ./Nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - todo-app-flask-reactjs_Bridge
+    depends_on:
+      - frontend
+      - backend
+      - phpmyadmin_tp_docker
+
   backend:
     build:
-      context: ./backend   # Vérifiez que ce répertoire contient le Dockerfile
-      dockerfile: Dockerfile # S'assurer que le nom du Dockerfile est bien spécifié
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "5000:5000"
+    networks:
+      - todo-app-flask-reactjs_Bridge
     volumes:
       - ./backend:/app
     environment:
       FLASK_ENV: development
+      DATABASE_URL: mysql://user:password@db_tp_docker/mydatabase
     depends_on:
-      - db_tp_docker
+      db_tp_docker:
+        condition: service_healthy
 
   frontend:
     build:
-      context: ./frontend  # Vérifiez que ce répertoire contient le Dockerfile
-      dockerfile: Dockerfile # S'assurer que le nom du Dockerfile est bien spécifié
-    ports:
-      - "3000:80"
+      context: ./frontend
+      dockerfile: Dockerfile
+    expose:
+      - "5173"
+    networks:
+      - todo-app-flask-reactjs_Bridge
     volumes:
-      - ./frontend:/dist
-    stdin_open: true
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost/api
+    ports:
+      - "3000:5173"
 
   db_tp_docker:
     image: mysql:8.0
@@ -33,20 +60,26 @@ services:
       MYSQL_PASSWORD: password
     volumes:
       - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - todo-app-flask-reactjs_Bridge
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 30s
-      retries: 3
-      start_period: 10s
+      interval: 10s
       timeout: 5s
+      retries: 5
+      start_period: 30s
 
   phpmyadmin_tp_docker:
     image: phpmyadmin/phpmyadmin
     environment:
       PMA_HOST: db_tp_docker
       MYSQL_ROOT_PASSWORD: rootpassword
-    ports:
-      - "8080:80"
+    expose:
+      - "80"
+    networks:
+      - todo-app-flask-reactjs_Bridge
     depends_on:
       - db_tp_docker
 
